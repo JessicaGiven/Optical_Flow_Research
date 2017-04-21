@@ -22,24 +22,22 @@ using namespace std;
 // This code is modified from:
 // http://vision.middlebury.edu/flow/data/
 
-Mat computeSalMap(Mat& flow, Mat& gray)
+Mat computeSalMap(Mat flow, Mat gray)
 {
-	Mat result = gray;
+	Mat result(gray.size(), CV_32FC1);
 
 	for ( int i = 0; i < flow.rows; i++)
 	{
 		for (int j = 0; j < flow.cols; j++)
 		{
-			float f1 = flow.ptr<float>(i)[2 * j]; // first channel
-			float f2 = flow.ptr<float>(i)[2 * j + 1]; // second channel
-			uchar f3 = uchar(sqrt(f1*f1 + f2*f2) / 255);
-			result.at<uchar>(i, j) = f3;
+			float f1 = flow.ptr<float>(i, j)[0]; // first channel
+			float f2 = flow.ptr<float>(i, j)[1]; // second channel
+			float f3 = sqrt(f1*f1*100 + f2*f2*100) / 255;
+			result.at<float>(i, j) = f3;
 		}
 	}
 	return result;
 }
-
-
 
 void makecolorwheel(vector<Scalar> &colorwheel)
 {
@@ -136,7 +134,6 @@ int main(int, char**)
 
 	Mat prevgray, gray, flow, cflow, frame;
 	namedWindow("flow", 1);
-	namedWindow("flow_raw", 1);
 
 	Mat motion2color;
 
@@ -152,7 +149,7 @@ int main(int, char**)
 		{
 			calcOpticalFlowFarneback(prevgray, gray, flow, 0.5, 3, 15, 3, 5, 1.2, 0);
 			Mat flow_result = computeSalMap(flow, gray);
-			imshow("flow_raw", flow_result);
+			imshow("Sal_Map", flow_result);
 			motionToColor(flow, motion2color);
 			imshow("flow", motion2color);
 		}
